@@ -2,6 +2,14 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from matplotlib import pyplot
+from datetime import date
+
+def saveToCSV(bankName, curName, curBuy, curSale):
+    with open(f"./Exchanges_CSV/{bankName}_{date.today().strftime("%d_%m_%Y")}.csv", "w", encoding="UTF-8") as f:
+        f.write("Name,buy,sale\n")
+        for i in range(len(curName)):
+            csv_format = f"{curName[i][0:3]},{curBuy[i]},{curSale[i]}\n"
+            f.write(csv_format)
 
 #open driver
 driver = webdriver.Chrome()
@@ -23,20 +31,14 @@ currencyNames = [name.text for name in currencyNames_d];
 currencyBuy = [price.text for price in currencyBuy_d];
 currencySale = [price.text for price in currencySale_d];
 
-print("---------------")
-for i in range(len(currencyNames_d)):
-    print(currencyNames_d[i].text, " ", currencyBuy_d[i].text, " ", currencySale_d[i].text)
+saveToCSV("PrivateBank", currencyNames, currencyBuy, currencySale)
 
-with open("./Exchanges_CSV/PrivateBank.csv", "w", encoding="UTF-8") as f:
-    f.write("Name,buy,sale\n")
-    for i in range(len(currencyNames_d)):
-        csv_format = f"{currencyNames_d[i].text[0:3]},{currencyBuy_d[i].text},{currencySale_d[i].text}\n"
-        f.write(csv_format)
-
-pyplot.plot(currencyBuy)
-pyplot.plot(currencySale)
-pyplot.grid()
-
-pyplot.show()
+# pyplot.plot(currencyBuy)
+# pyplot.plot(currencySale)
+# pyplot.grid()
+#
+# pyplot.show()
 
 driver.close()
+
+
