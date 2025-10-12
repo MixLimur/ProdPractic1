@@ -1,0 +1,4 @@
+bank|link|container|names|buy|sale|date|doBefore|currency
+PUMB|https://about.pumb.ua/info/currency_converter|#single-page-rate-1 tbody|tr td:first-child|tr td:nth-child(2)|tr td:last-child
+OschadBank|https://www.oschadbank.ua/currency-rate|table.heading-block-currency-rate__table tbody|tr td:nth-child(2) span|tr td:nth-child(4) span|tr td:nth-child(5) span
+PrivateBank|https://privatbank.ua/obmin-valiut|#swift-currency-block .table_block table.table_show tbody|.tbody-swift .currency-swift|.buy-swift|.sale-swift|lambda: driver.find_element(By.ID, "swift-block").send_keys(Keys.RETURN)
