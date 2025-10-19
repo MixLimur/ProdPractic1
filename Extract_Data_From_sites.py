@@ -9,9 +9,33 @@ from selenium.webdriver.support import expected_conditions as EC
 from utils.bankSelectors import getBanksList
 from utils.fileInteraction import saveToCSV, readFromCSV
 from utils.graphic import createGraphics
+from selenium.webdriver.chrome.options import Options
 
-driver = webdriver.Chrome()
+# 1. Create Options object
+options = Options()
+
+# 2. Add the headless argument
+# Use '--headless=new' for modern Chrome versions (v109+)
+# You might use just '--headless' for older versions, but 'new' is better.
+options.add_argument("--headless=new")
+
+# Optional: Set a window size, as some sites adapt to screen resolution
+options.add_argument("--window-size=1920,1080")
+
+# 3. Pass the options to the WebDriver
+driver = webdriver.Chrome(options=options)
+
 wait = WebDriverWait(driver, 10)
+
+
+
+def extractData():
+    itemsToAdd = list()
+    banks = getBanksList()
+    for bank in banks:
+        itemsToAdd.extend(extractDataFromSite(bank))
+    saveToCSV(itemsToAdd)
+    driver.close()
 
 def toDotNotation(string):
     return string.replace(',', '.').replace('-', '.')
@@ -111,37 +135,45 @@ def extractDataFromSite(bankDictionary):
     lst = extractDataFromTable(bankDictionary)
     return lst
 
-def main():
-    itemsToAdd = list()
-    banks = getBanksList()
-    for bank in banks:
-        itemsToAdd.extend(extractDataFromSite(bank))
-    saveToCSV(itemsToAdd)
-
-# main()
-
 def toActualFormats(stringsList):
     for sublist in stringsList:
         sublist[0] = datetime.strptime(sublist[0], '%d.%m.%Y')
         sublist[3] = float(sublist[3])
         sublist[4] = float(sublist[4])
 
-globalList = readFromCSV()
-toActualFormats(globalList)
+def toGraphic():
+    globalList = readFromCSV()
+    toActualFormats(globalList)
 
-bankCurrencyDictionary = defaultdict(list)
+    bankCurrencyDictionary = defaultdict(list)
 
-for record in globalList:
-    bank = record[1]
-    currency = record[2]
-    key = (bank, currency)
-    bankCurrencyDictionary[key].append(record)
+    for record in globalList:
+        bank = record[1]
+        currency = record[2]
+        key = (bank, currency)
+        bankCurrencyDictionary[key].append(record)
 
-final_results = dict(bankCurrencyDictionary)
+    createGraphics(bankCurrencyDictionary)
 
-for key, value_list in final_results.items():
-    print(f"\nGroup: {key}")
-    print(value_list)
+def menu():
+    menu_actions = {
+        '1': extractData,
+        '2': toGraphic,
+        '3': exit
+    }
+    while True:
+        print("1.Get data from sites 2.Create and display graphic, 3.Exit")
+        choice = input("Enter your choice (1-3): ").strip()
 
-createGraphics(bankCurrencyDictionary)
+        if choice in menu_actions:
+            # Execute the function associated with the choice
+            if choice == '3':
+                print("\n✅ Thank you for using the program. Goodbye!")
+                break
+            else:
+                menu_actions[choice]()  # Call the function
+        else:
+            # Handle invalid input
+            print(f"\n❌ Invalid option: '{choice}'. Please enter a number between 1 and 4.")
 
+menu()
