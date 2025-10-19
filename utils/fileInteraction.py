@@ -1,4 +1,10 @@
-def uniqueSetFromFile(filePath):
+FILE_PATH = "./Exchanges.csv"
+
+def setPath(newPath):
+    global FILE_PATH
+    FILE_PATH = newPath
+
+def uniqueSetFromFile(filePath = FILE_PATH):
     uniqueItems = set()
     try:
         with open(filePath, "r", encoding = "UTF-8") as fr:
@@ -10,7 +16,7 @@ def uniqueSetFromFile(filePath):
             file.write("date,bank,currency,buy,sale")
     return uniqueItems
 
-def saveToCSV(itemsToAdd, filePath = "./Exchanges_CSV/Exchanges3.csv" ):
+def saveToCSV(itemsToAdd, filePath = FILE_PATH ):
     uniqueCSVItems = uniqueSetFromFile(filePath)
 
     itemsToAdd = [item for item in itemsToAdd if tuple(item[:3]) not in uniqueCSVItems]
@@ -28,7 +34,7 @@ def saveToCSV(itemsToAdd, filePath = "./Exchanges_CSV/Exchanges3.csv" ):
         for line in itemsToFile:
             fa.write(f"\n{line[0]},{line[1]},{line[2]},{line[3]},{line[4]}")
 
-def readFromCSV(filePath = "./Exchanges_CSV/Exchanges3.csv"):
+def readFromCSV(filePath = FILE_PATH):
     recordsList = list()
     with open(filePath, "r", encoding="UTF-8") as fr:
         next(fr)  # skip first (header) line of csv
@@ -42,3 +48,4 @@ if __name__ == "__main__":
     print("uniqueSetFromFile(filePath) -> return set of unique items from CSV file")
     print("saveToCSV(itemsToAdd, filePath) -> save unique items from given list to CSV")
     print("readFromCSV(filePath) -> return a list of records as lists of strings from CSV")
+    print("setPath(newPath) -> set a new FILE_PATH")

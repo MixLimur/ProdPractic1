@@ -1,5 +1,5 @@
 from matplotlib import pyplot, ticker
-
+savePngPath = "./graphic.png"
 def createGraphics(groupedDictionary):
     fig, axes = pyplot.subplots(nrows=1, ncols=2, figsize=(20, 10))
 
@@ -13,7 +13,6 @@ def createGraphics(groupedDictionary):
         # axes[index % 2].plot(dates, sale, label=f"{key[0]}{key[1]} Sale")
 
     for lst in listToGraphic:
-        print(lst)
         if lst[2] == "USD":
             index = 0
         else:
@@ -49,4 +48,11 @@ def createGraphics(groupedDictionary):
         frameon=True
     )
     pyplot.subplots_adjust(bottom=0.2)
+
+
+def showFigure():
     pyplot.show()
+def saveFigure():
+    pyplot.show()
+    path = input("Enter path where save graphic: ")
+    pyplot.savefig(path)

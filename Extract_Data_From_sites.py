@@ -1,15 +1,18 @@
 from collections import defaultdict
 from datetime import datetime
+
 from selenium import webdriver
 from selenium.common import StaleElementReferenceException
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from utils.bankSelectors import getBanksList
-from utils.fileInteraction import saveToCSV, readFromCSV
-from utils.graphic import createGraphics
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
+from utils.bankSelectors import getBanksList
+import utils.fileInteraction as fileIO
+import utils.graphic as gr
+# from utils.graphic import createGraphics
 
 # 1. Create Options object
 options = Options()
@@ -27,14 +30,16 @@ driver = webdriver.Chrome(options=options)
 
 wait = WebDriverWait(driver, 10)
 
-
-
 def extractData():
     itemsToAdd = list()
     banks = getBanksList()
-    for bank in banks:
+    total = len(banks)
+    for i, bank in enumerate(banks,1):
+        print(f"Extracting data from [{i}/{total}] source")
         itemsToAdd.extend(extractDataFromSite(bank))
-    saveToCSV(itemsToAdd)
+        print(f"Data from [{i}/{total}] is extracted\n")
+    fileIO.saveToCSV(itemsToAdd, fileIO.FILE_PATH)
+    print(f"Data saved in file:{fileIO.FILE_PATH}")
     driver.close()
 
 def toDotNotation(string):
@@ -70,7 +75,7 @@ def clickShowMore(show_more_selector, tr_selector):
             )
 
         except TimeoutException:
-            print("No more 'Show More' button found or data loaded.")
+            # print("No more 'Show More' button found or data loaded.")
             break
         except StaleElementReferenceException:
             continue
@@ -142,7 +147,7 @@ def toActualFormats(stringsList):
         sublist[4] = float(sublist[4])
 
 def toGraphic():
-    globalList = readFromCSV()
+    globalList = fileIO.readFromCSV(fileIO.FILE_PATH)
     toActualFormats(globalList)
 
     bankCurrencyDictionary = defaultdict(list)
@@ -153,27 +158,55 @@ def toGraphic():
         key = (bank, currency)
         bankCurrencyDictionary[key].append(record)
 
-    createGraphics(bankCurrencyDictionary)
+    gr.createGraphics(bankCurrencyDictionary)
 
-def menu():
+def changeFilePath():
+    print(f"Current file path is: {fileIO.FILE_PATH}")
+    newPath = input("Enter new file path:")
+    fileIO.setPath(newPath)
+
+def graphicWorkMenu():
     menu_actions = {
-        '1': extractData,
-        '2': toGraphic,
-        '3': exit
+        '1': toGraphic,
+        '2': gr.showFigure,
+        '3': gr.saveFigure,
+        '4': exit
     }
     while True:
-        print("1.Get data from sites 2.Create and display graphic, 3.Exit")
-        choice = input("Enter your choice (1-3): ").strip()
+        print("1.Build graphic 2.Show graphic 3.Save graphic as image 4.Previous menu")
+        choice = input("Enter your choice (1-4): ").strip()
 
         if choice in menu_actions:
-            # Execute the function associated with the choice
-            if choice == '3':
-                print("\n✅ Thank you for using the program. Goodbye!")
+            if choice == '4':
                 break
             else:
                 menu_actions[choice]()  # Call the function
         else:
             # Handle invalid input
-            print(f"\n❌ Invalid option: '{choice}'. Please enter a number between 1 and 4.")
+            print(f"\nInvalid option: '{choice}'. Please enter a number between 1 and 4.")
+
+
+def menu():
+    menu_actions = {
+        '1': extractData,
+        '2': graphicWorkMenu,
+        '3': changeFilePath,
+        '4': exit
+    }
+    while True:
+        print("1.Get data from sites 2.Graphic 3.Change file path 4.Exit")
+        choice = input("Enter your choice (1-3): ").strip()
+
+        if choice in menu_actions:
+            if choice == '1':
+                print("\nData extraction in progress...")
+            if choice == '4':
+                print("\nGoodbye")
+                break
+            else:
+                menu_actions[choice]()  # Call the function
+        else:
+            # Handle invalid input
+            print(f"\nInvalid option: '{choice}'. Please enter a number between 1 and 4.")
 
 menu()
